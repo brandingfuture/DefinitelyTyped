@@ -2,6 +2,6 @@
     "private": true,
     "dependencies": {
         "winston-transport": "^4.3.0",
-        "logform": "^1.4.0"
+        "logform": "^2.3.2"
     }
 }
