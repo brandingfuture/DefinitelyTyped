@@ -1,6 +1,6 @@
 {
     "private": true,
     "dependencies": {
-        "@types/mongoose": "5.10.5"
+        "@types/mongoose": "5.11.96"
     }
 }
