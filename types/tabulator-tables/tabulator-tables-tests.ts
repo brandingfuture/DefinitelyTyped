@@ -1,4 +1,4 @@
-import { Tabulator, Renderer, Module, DataTreeModule, TabulatorFull } from 'tabulator-tables';
+import { Tabulator, Renderer, Module, DataTreeModule, TabulatorFull, TooltipModule } from 'tabulator-tables';
 
 // tslint:disable:no-object-literal-type-assertion
 // tslint:disable:whitespace
@@ -335,6 +335,13 @@ colDef.bottomCalc = (values, data, calcParams) => {
 colDef.bottomCalcFormatter = (cell, formatterParams, onRendered) => {
     return '';
 };
+
+colDef.tooltip = (event: MouseEvent, cell: Tabulator.CellComponent, onRendered: (callback: () => void) => void) => {
+    onRendered(() => {
+      console.log('rendering occured');
+    });
+    return cell.getValue();
+  };
 
 // Cell Component
 
@@ -911,6 +918,7 @@ row.getElement();
 row.getTable();
 row.getCells();
 row.getCell(column);
+row.isTreeExpanded();
 
 let calcComponent = {} as Tabulator.CalculationComponent;
 calcComponent.getData();
@@ -1002,6 +1010,9 @@ table = new Tabulator('#test', {
     },
     invalidOptionWarning: false,
     debugInvalidOptions: false,
+    debugInitialization: true,
+    debugEventsExternal: false,
+    debugEventsInternal: false,
 });
 
 const dataProcessedEvent = () => {};
@@ -1011,8 +1022,10 @@ table.on('dataLoaded', () => {});
 table.on('dataLoadError', () => {});
 table.on('dataProcessing', () => {});
 table.on('dataProcessed', () => {});
+table.on('rowMoving', () => {});
 table.off('dataProcessed');
 table.off('dataProcessed', dataProcessedEvent);
+table.off('rowMoving', () => {});
 table.on('cellClick', () => {});
 table = Tabulator.findTable('#example-table')[0];
 table = TabulatorFull.findTable('#example-table')[0];
@@ -1030,3 +1043,25 @@ class CustomModule extends Module {
 
 CustomModule.moduleName = 'custom';
 Tabulator.registerModule([CustomModule, DataTreeModule]);
+
+const sortHandler = {} as (sorters: Tabulator.SorterFromTable[]) => void;
+table = new Tabulator('#test', {
+    dataSorting: sortHandler,
+    dataSorted: sortHandler,
+});
+table.on('dataSorting', ([sorter]) => sorter.field);
+table.on('dataSorted', ([sorter]) => sorter.field);
+
+Tabulator.registerModule([TooltipModule]);
+
+// 5.2
+table = new Tabulator('#test', {
+    // test editor of type 'list' supported.
+    columns: [
+        {
+            field: "test_editor",
+            title: "Test Editor",
+            editor: "list"
+        }
+    ]
+});

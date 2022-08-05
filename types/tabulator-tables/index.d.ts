@@ -1,4 +1,4 @@
-// Type definitions for tabulator-tables 5.0
+// Type definitions for tabulator-tables 5.2
 // Project: http://tabulator.info
 // Definitions by: Josh Harris <https://github.com/jojoshua>, Mike Lischke <https://github.com/mike-lischke>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -29,7 +29,14 @@ declare namespace Tabulator {
 
     interface OptionsDebug {
         invalidOptionWarning?: boolean;
+        /** Enabled by default this will provide a console warning if you are trying to set an option on the table that does not exist. With the new optional modular structure this is particularly valueable as it will prompt you if you are trying to use an option for a module that has not been installed */
         debugInvalidOptions?: boolean;
+        /** Enabled by default this will provide a console warning if you try and call a function on the table before it has been initialized. */
+        debugInitialization?: boolean;
+        /** The debugEventsExternal option will create a console log for every external event that is fired so you can gain an understanding of which events you should be binding to. */
+        debugEventsExternal?: boolean;
+        /** he debugEventsInternal option will create a console log for every internal event that is fired so you can gain an understanding of which events you should be subscribing to in your modules. */
+        debugEventsInternal?: boolean;
     }
 
     interface OptionsCells extends CellCallbacks {
@@ -913,10 +920,10 @@ declare namespace Tabulator {
         pageLoaded?: ((pageno: number) => void) | undefined;
 
         /** The dataSorting callback is triggered whenever a sort event occurs, before sorting happens. */
-        dataSorting?: ((sorters: Sorter[]) => void) | undefined;
+        dataSorting?: ((sorters: SorterFromTable[]) => void) | undefined;
 
         /** The dataSorted callback is triggered after the table dataset is sorted. */
-        dataSorted?: ((sorters: Sorter[], rows: RowComponent[]) => void) | undefined;
+        dataSorted?: ((sorters: SorterFromTable[], rows: RowComponent[]) => void) | undefined;
 
         /** Setting the invalidOptionWarnings option to false will disable console warning messages for invalid properties in the table constructor and column definition object. */
         invalidOptionWarnings?: boolean | undefined;
@@ -1501,7 +1508,7 @@ declare namespace Tabulator {
 
     type TextDirection = 'auto' | 'ltr' | 'rtl';
 
-    type GlobalTooltipOption = boolean | ((cell: CellComponent) => string);
+    type GlobalTooltipOption = boolean | ((event: MouseEvent, cell: CellComponent, onRender: (() => void)) => string);
 
     type CustomMutator = (
         value: any,
@@ -1590,6 +1597,7 @@ declare namespace Tabulator {
         | 'star'
         | 'select'
         | 'autocomplete'
+        | 'list'
         | ((
             cell: CellComponent,
             onRendered: EmptyCallback,
@@ -1956,6 +1964,9 @@ declare namespace Tabulator {
          */
         addTreeChild: (rowData: {}, position?: boolean, existingRow?: RowComponent) => void;
 
+        /** Returns a value indicating if the current row is expanded. */
+        isTreeExpanded: () => boolean;
+
         /**
          * You can validate the whole table in one go by calling the validate method on the table instance.
          *
@@ -2167,6 +2178,7 @@ interface EventCallBackMethods {
     scrollVertical: (top: number) => void;
     rowAdded: (row: Tabulator.RowComponent) => void;
     rowDeleted: (row: Tabulator.RowComponent) => void;
+    rowMoving: (row: Tabulator.RowComponent) => void;
     rowMoved: (row: Tabulator.RowComponent) => void;
     rowUpdated: (row: Tabulator.RowComponent) => void;
     rowSelectionChanged: () => void;
@@ -2213,8 +2225,8 @@ interface EventCallBackMethods {
     dataChanged: (data: any[]) => void;
     dataFiltering: (filters: Tabulator.Filter[]) => void;
     dataFiltered: (filters: Tabulator.Filter[], rows: Tabulator.RowComponent[]) => void;
-    dataSorting: (sorters: Tabulator.Sorter) => void;
-    dataSorted: (sorters: Tabulator.Sorter, rows: Tabulator.RowComponent[]) => void;
+    dataSorting: (sorters: Tabulator.SorterFromTable[]) => void;
+    dataSorted: (sorters: Tabulator.SorterFromTable[], rows: Tabulator.RowComponent[]) => void;
     movableRowsSendingStart: (toTables: Tabulator[]) => void;
     movableRowsSent: (fromRow: Tabulator.RowComponent, toRow: Tabulator.RowComponent, toTable: Tabulator) => void;
     movableRowsSentFailed: (fromRow: Tabulator.RowComponent, toRow: Tabulator.RowComponent, toTable: Tabulator) => void;
@@ -2346,11 +2358,6 @@ declare class Tabulator {
     /** Destructor. */
     destroy: () => void;
 
-    /**
-     * By default Tabulator will only allow files with a .json extension to be loaded into the table.
-     * You can allow any other type of file into the file picker by passing the extension or mime type into the first argument of the setDataFromLocalFile function as a comma separated list. This argument will accept any of the values valid for the accept field of an input element.
-     */
-    setDataFromLocalFile: (extensions: string) => void;
     setData: (data: any, params?: any, config?: any) => Promise<void>;
 
     /** You can remove all data from the table using clearData */
@@ -2833,6 +2840,7 @@ declare class ResponsiveLayoutModule { }
 declare class SelectRowModule { }
 declare class SortModule { }
 declare class TabulatorFull extends Tabulator { }
+declare class TooltipModule {}
 declare class ValidateModule { }
 
 export {
@@ -2872,5 +2880,6 @@ export {
     SortModule,
     Tabulator,
     TabulatorFull,
+    TooltipModule,
     ValidateModule,
 };

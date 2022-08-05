@@ -29,10 +29,10 @@ Si aún no puedes encontrarlo, comprueba si el paquete ya [incluye](https://www.
 Esto es provisto usualmente en el campo `"types"` o `"typings"` en el `package.json`,
 o solo busca por cualquier archivo ".d.ts" en el paquete e inclúyelo manualmente con un `/// <reference path="" />`.
 
-#### Versiones más viejas de TypeScript (3.7 y anteriores)
+#### Versiones más viejas de TypeScript (3.9 y anteriores)
 
 Definitely Typed solamente prueba paquetes en versiones de TypeScript que son menores a 2 años.
-Actualmente, las versiones 3.8 y posteriores están siendo probadas. Si estas usando TypeScript 2.0 a 3.7, puedes intentar instalando paquetes `@types` &mdash; la mayoría de los paquetes no usan los beneficios de Typescript más nuevos. No hay garantía de que funcionen.
+Actualmente, las versiones 4.0 y posteriores están siendo probadas. Si estas usando TypeScript 2.0 a 3.9, puedes intentar instalando paquetes `@types` &mdash; la mayoría de los paquetes no usan los beneficios de Typescript más nuevos. No hay garantía de que funcionen.
 Versiones soportadas:
 
 <img src="docs/support-window.svg#gh-light-mode-only" style="width:100%">
@@ -199,7 +199,7 @@ const result = twoslash("//")
 + // Handle options param
 + const resultWithOptions = twoslash("//", { version: "3.7" })
 + // When the param is incorrect
-+ // $ExpectError
++ // @ts-expect-error
 + const resultWithOptions = twoslash("//", {  })
 ```
 
@@ -207,13 +207,13 @@ If you're wondering where to start with test code, the examples in the README of
 
 You can [validate your changes](#running-tests) with `npm test <package to test>` from the root of this repo, which takes changed files into account.
 
-Para afirmar que una expresión es de un tipo dado, utilice `$ExpectType`. Para afirmar que una expresión causa un error de compilación, utilice `$ExpectError`.
+Para afirmar que una expresión es de un tipo dado, utilice `$ExpectType`. Para afirmar que una expresión causa un error de compilación, utilice `@ts-expect-error`.
 
 ```js
 // $ExpectType void
 f(1);
 
-// $ExpectError
+// @ts-expect-error
 f("one");
 ```
 
@@ -308,7 +308,7 @@ Entonces están equivocados. Puedes ayudar enviando un pull request para arregla
 
 #### Puedo pedir una definition?
 
-Aquí están las [definiciones solicitadas actualmente](https://github.com/DefinitelyTyped/DefinitelyTyped/labels/Definition%3ARequest).
+Aquí están las [definiciones solicitadas actualmente](https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/categories/request-a-new-types-package).
 
 #### ¿Qué pasa con las type definitions para el DOM?
 
@@ -338,7 +338,7 @@ Si planeas continuar actualizando la versión anterior del paquete, puedes crear
 1. Actualiza las rutas relativas en `tsconfig.json` al igual que `tslint.json`.
 2. Añadir reglas de mapeo de rutas para asegurarte de que la prueba se está ejecutando contra la versión prevista.
 
-Por ejemplo [history v2 `tsconfig.json`](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/history/v2/tsconfig.json) se ve así:
+Por ejemplo [history v2 `tsconfig.json`](https://github.com/%44efinitelyTyped/DefinitelyTyped/blob/1253faabf5e0d2c5470db6ea87795d7f96fef7e2/types/history/v2/tsconfig.json) se ve así:
 
 ```json
 {
@@ -385,10 +385,6 @@ Cuando `dts-gen` es utilizado como scaffold en un paquete scoped, las propiedade
     }
 }
 ```
-
-#### El historial de archivos en GitHub parece incompleto.
-
-GitHub no le hace [support](https://stackoverflow.com/questions/5646174/how-to-make-github-follow-directory-history-after-renames) historial de archivos para archivos renombrados. Utilice [`git log --follow`](https://www.git-scm.com/docs/git-log) en su lugar.
 
 #### Debería añadir un namespace que no exporte un módulo que utilice que utilice imports estilo ES6?
 

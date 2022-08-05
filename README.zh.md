@@ -48,9 +48,9 @@ npm install --save-dev @types/node
 这通常会通过 `package.json` 文件中的 `"types"` 或 `"typings"` 字段提供，
 或者将包中包含类型定义的 ".d.ts" 文件手动通过 `/// <reference path="" />` 引入.
 
-#### 旧版本的 TypeScript（3.7 和更早版本）
+#### 旧版本的 TypeScript（3.9 和更早版本）
 
-Definitely Typed 仅在发布时间小于 2 年的 TypeScript 版本上测试软件包。当前已测试 3.8 及更高版本。如果您使用的是 TypeScript 2.0 到 3.7，仍然可以尝试安装 @types 软件包，大多数软件包都不使用 TypeScript 的新特性。但是不能保证它们会起作用，这是支持窗口：
+Definitely Typed 仅在发布时间小于 2 年的 TypeScript 版本上测试软件包。当前已测试 4.0 及更高版本。如果您使用的是 TypeScript 2.0 到 3.9，仍然可以尝试安装 @types 软件包，大多数软件包都不使用 TypeScript 的新特性。但是不能保证它们会起作用，这是支持窗口：
 
 <img src="docs/support-window.svg#gh-light-mode-only" style="width:100%">
 <img src="docs/support-window.svg#gh-dark-mode-only" style="width:100%">
@@ -249,7 +249,7 @@ const result = twoslash("//")
 + // Handle options param
 + const resultWithOptions = twoslash("//", { version: "3.7" })
 + // When the param is incorrect
-+ // $ExpectError
++ // @ts-expect-error
 + const resultWithOptions = twoslash("//", {  })
 ```
 
@@ -257,13 +257,13 @@ const result = twoslash("//")
 
 你可以在根目录执行 `npm test <package to test>` 来 [validate your changes](#验证) 来验证你的更改。
 
-若要声明的表达式是一个给定类型，请使用 `$ExpectType`. 若要声明的表达式会导致编译错误，请使用 `$ExpectError`.
+若要声明的表达式是一个给定类型，请使用 `$ExpectType`. 若要声明的表达式会导致编译错误，请使用 `@ts-expect-error`.
 
 ```js
 // $ExpectType void
 f(1);
 
-// $ExpectError
+// @ts-expect-error
 f("one");
 ```
 
@@ -305,7 +305,8 @@ Definitely Typed 包的发布者会为在 Definitely Typed 之外没有依赖的
 * 格式化：使用 4 个空格。 该仓库已经设置了 prettier，因此你只需要运行 `npm run prettier -- --write path/to/package/**/*.ts`. [使用断言时](https://github.com/SamVerschueren/tsd#assertions)，添加 `// prettier-ignore` 将这几行标记为不需要格式化的代码：
   ```tsx
   // prettier-ignore
-  const incompleteThemeColorModes: Theme = { colors: { modes: { papaya: { // $ExpectError
+  // @ts-expect-error
+  const incompleteThemeColorModes: Theme = { colors: { modes: { papaya: {
   ```
 * `function sum(nums: number[]): number`: 如果函数没有写入的参数，请使用 `ReadonlyArray`.
 * `interface Foo { new(): Foo; }`:
@@ -368,7 +369,7 @@ npm 包应该会在几分钟内更新。如果已经超过了一小时，请在 
 
 #### 我可以请求类型定义吗？
 
-这里是 [当前在请求的类型定义](https://github.com/DefinitelyTyped/DefinitelyTyped/labels/Definition%3ARequest)。
+这里是 [当前在请求的类型定义](https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/categories/request-a-new-types-package)。
 
 #### DOM 上的类型定义是什么？
 
@@ -489,7 +490,7 @@ _注意：本节中的讨论假定你熟悉 [语义版本控制](https://semver.
 
 例如，[`history`](https://github.com/ReactTraining/history/) 库在 `2.x` 到 `3.x` 版本间引入了重大的修改。
 因为许多用户仍然使用较老的 `2.x` 版本，维护人员想要将此库的类型声明更新到 `3.x`, 需要在仓库里添加 `v2` 文件夹，里面包含了旧版本的类型声明。
-在编写时，[history v2 `tsconfig.json`](https://github.com/DefinitelyTyped/DefinitelyTyped/blob/1253faabf5e0d2c5470db6ea87795d7f96fef7e2/types/history/v2/tsconfig.json) 大致如下：
+在编写时，[history v2 `tsconfig.json`](https://github.com/%44efinitelyTyped/DefinitelyTyped/blob/1253faabf5e0d2c5470db6ea87795d7f96fef7e2/types/history/v2/tsconfig.json) 大致如下：
 
 ```json
 {
@@ -536,10 +537,6 @@ TypeScript 手册包含了优秀的 [关于编写类型定义的概括信息](ht
     }
 }
 ```
-
-#### GitHub 中的文件记录看起来不完整。
-
-GitHub 不 [支持](https://stackoverflow.com/questions/5646174/how-to-make-github-follow-directory-history-after-renames) 重命名文件的历史记录。请使用 [`git log --follow`](https://www.git-scm.com/docs/git-log) 命令代替。
 
 ## 许可证
 

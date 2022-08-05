@@ -1,4 +1,4 @@
-import { Readable, Writable, Transform, finished, pipeline, Duplex, addAbortSignal } from 'node:stream';
+import { Readable, Writable, Transform, finished, pipeline, Duplex, addAbortSignal, isErrored, isReadable } from 'node:stream';
 import { promisify } from 'node:util';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { createGzip, constants } from 'node:zlib';
@@ -525,6 +525,59 @@ addAbortSignal(new AbortSignal(), new Readable());
     const readableAborted: boolean = readable.readableAborted;
 }
 
+{
+    isErrored(new Readable()); // $ExpectType boolean
+    isErrored(new Duplex()); // $ExpectType boolean
+    isErrored(new Writable()); // $ExpectType boolean
+}
+
+{
+    isReadable(new Readable()); // $ExpectType boolean
+    isReadable(new Duplex()); // $ExpectType boolean
+}
+
+{
+    const readable = new Readable();
+    // $ExpectType ReadableStream<any>
+    Readable.toWeb(readable);
+}
+
+{
+    const web = new ReadableStream();
+
+    // $ExpectType Readable
+    Readable.fromWeb(web);
+
+    // Handles subset of ReadableOptions param
+    // $ExpectType Readable
+    Readable.fromWeb(web, { objectMode: true });
+
+    // When the param includes unsupported ReadableOptions
+    // @ts-expect-error
+    Readable.fromWeb(web, { emitClose: true });
+}
+
+{
+    const writable = new Writable();
+    // $ExpectType WritableStream<any>
+    Writable.toWeb(writable);
+}
+
+{
+    const web = new WritableStream();
+
+    // $ExpectType Writable
+    Writable.fromWeb(web);
+
+    // Handles subset of WritableStream param
+    // $ExpectType Writable
+    Writable.fromWeb(web, { objectMode: true });
+
+    // When the param includes unsupported WritableStream
+    // @ts-expect-error
+    Writable.fromWeb(web, { write: true });
+}
+
 async function testReadableStream() {
     const SECOND = 1000;
 
@@ -533,6 +586,11 @@ async function testReadableStream() {
             for await (const _ of every(SECOND)) controller.enqueue(performance.now());
         },
     });
+
+    for await (const value of stream.values()) {
+      // $ExpectType number
+      value;
+    }
 
     // ERROR: 538:31  await-promise  Invalid 'for-await-of' of a non-AsyncIterable value.
     // for await (const value of stream) {

@@ -10,8 +10,8 @@
 
 /// <reference path="helpers.d.ts" />
 
-import { JSONSchema4 } from "json-schema";
 import * as ESTree from "estree";
+import { JSONSchema4 } from "json-schema";
 
 export namespace AST {
     type TokenType =
@@ -85,6 +85,7 @@ export namespace Scope {
 
     interface Variable {
         name: string;
+        scope: Scope;
         identifiers: ESTree.Identifier[];
         references: Reference[];
         defs: Definition[];
@@ -551,15 +552,15 @@ export namespace Rule {
 
     interface RuleMetaData {
         docs?: {
-            /** provides the short description of the rule in the [rules index](https://eslint.org/docs/rules/) */
+            /** Provides the short description of the rule in the [rules index](https://eslint.org/docs/rules/) */
             description?: string | undefined;
-            /** specifies the heading under which the rule is listed in the [rules index](https://eslint.org/docs/rules/) */
+            /** Specifies the heading under which the rule is listed in the [rules index](https://eslint.org/docs/rules/) */
             category?: string | undefined;
-            /** is whether the `"extends": "eslint:recommended"` property in a [configuration file](https://eslint.org/docs/user-guide/configuring#extending-configuration-files) enables the rule */
+            /** Is whether the `"extends": "eslint:recommended"` property in a [configuration file](https://eslint.org/docs/user-guide/configuring#extending-configuration-files) enables the rule */
             recommended?: boolean | undefined;
-            /** specifies the URL at which the full documentation can be accessed */
+            /** Specifies the URL at which the full documentation can be accessed */
             url?: string | undefined;
-            /** specifies whether rules can return suggestions (defaults to false if omitted) */
+            /** Specifies whether rules can return suggestions (defaults to false if omitted) */
             suggestion?: boolean | undefined;
         } | undefined;
         messages?: { [messageId: string]: string } | undefined;
@@ -567,7 +568,7 @@ export namespace Rule {
         schema?: JSONSchema4 | JSONSchema4[] | undefined;
         deprecated?: boolean | undefined;
         type?: "problem" | "suggestion" | "layout" | undefined;
-        /** specifies whether rules can return suggestions (defaults to false if omitted) */
+        /** Specifies whether rules can return suggestions (defaults to false if omitted) */
         hasSuggestions?: boolean | undefined;
     }
 
@@ -718,7 +719,7 @@ export namespace Linter {
     }
 
     interface ParserOptions {
-        ecmaVersion?: 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | "latest" |undefined;
+        ecmaVersion?: 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | "latest" | undefined;
         sourceType?: "script" | "module" | undefined;
         ecmaFeatures?: {
             globalReturn?: boolean | undefined;
@@ -761,6 +762,15 @@ export namespace Linter {
         /** @deprecated Use `linter.getSourceCode()` */
         source?: string | null | undefined;
         suggestions?: LintSuggestion[] | undefined;
+    }
+
+    interface LintSuppression {
+        kind: string;
+        justification: string;
+    }
+
+    interface SuppressedLintMessage extends LintMessage {
+        suppressions: LintSuppression[];
     }
 
     interface FixOptions extends LintOptions {
@@ -828,6 +838,20 @@ export class ESLint {
 }
 
 export namespace ESLint {
+    type ConfigData<Rules extends Linter.RulesRecord = Linter.RulesRecord> = Omit<Linter.Config<Rules>, "$schema">;
+
+    interface Environment {
+        globals?: { [name: string]: boolean; } | undefined;
+        parserOptions?: Linter.ParserOptions | undefined;
+    }
+
+    interface Plugin {
+        configs?: Record<string, ConfigData> | undefined;
+        environments?: Record<string, Environment> | undefined;
+        processors?: Record<string, Linter.Processor> | undefined;
+        rules?: Record<string, ((...args: any[]) => any) | Rule.RuleModule> | undefined;
+    }
+
     interface Options {
         // File enumeration
         cwd?: string | undefined;
@@ -842,7 +866,7 @@ export namespace ESLint {
         baseConfig?: Linter.Config | undefined;
         overrideConfig?: Linter.Config | undefined;
         overrideConfigFile?: string | undefined;
-        plugins?: Record<string, any> | undefined;
+        plugins?: Record<string, Plugin> | undefined;
         reportUnusedDisableDirectives?: Linter.RuleLevel | undefined;
         resolvePluginsRelativeTo?: string | undefined;
         rulePaths?: string[] | undefined;
@@ -861,6 +885,7 @@ export namespace ESLint {
     interface LintResult {
         filePath: string;
         messages: Linter.LintMessage[];
+        suppressedMessages: Linter.SuppressedLintMessage[];
         errorCount: number;
         fatalErrorCount: number;
         warningCount: number;
@@ -884,7 +909,7 @@ export namespace ESLint {
     }
 
     interface Formatter {
-        format(results: LintResult[], data?: LintResultData): string;
+        format(results: LintResult[], data?: LintResultData): string | Promise<string>;
     }
 
     // Docs reference the type by this name
