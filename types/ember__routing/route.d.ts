@@ -1,6 +1,6 @@
 import EmberObject from '@ember/object';
 import ActionHandler from '@ember/object/-private/action-handler';
-import Transition from '@ember/routing/-private/transition';
+import Transition from '@ember/routing/transition';
 import Evented from '@ember/object/evented';
 import { RenderOptions, RouteQueryParam } from '@ember/routing/types';
 import Controller from '@ember/controller';
@@ -12,7 +12,8 @@ type RouteModel = object | string | number;
  * The `Ember.Route` class is used to define individual routes. Refer to
  * the [routing guide](http://emberjs.com/guides/routing/) for documentation.
  */
-export default class Route<Model = unknown> extends EmberObject.extend(ActionHandler, Evented) {
+export default class Route<Model = unknown, Params extends object = object>
+    extends EmberObject.extend(ActionHandler, Evented) {
     // methods
     /**
      * This hook is called after this route's model has resolved. It follows
@@ -68,7 +69,7 @@ export default class Route<Model = unknown> extends EmberObject.extend(ActionHan
      * A hook you can implement to convert the URL into the model for
      * this route.
      */
-    model(params: Record<string, unknown>, transition: Transition): Model | PromiseLike<Model>;
+    model(params: Params, transition: Transition): Model | PromiseLike<Model>;
 
     /**
      * Returns the model of a parent (or any ancestor) route
@@ -85,7 +86,7 @@ export default class Route<Model = unknown> extends EmberObject.extend(ActionHan
      * Retrieves parameters, for current route using the state.params
      * variable and getQueryParamsFor, using the supplied routeName.
      */
-    paramsFor(name: string): Record<string, unknown>;
+    paramsFor(name: string): object;
 
     /**
      * A hook you can implement to optionally redirect to another route.
@@ -453,13 +454,13 @@ export default class Route<Model = unknown> extends EmberObject.extend(ActionHan
      * This hook is executed when the router enters the route. It is not executed
      * when the model for the route changes.
      */
-    activate(): void;
+    activate(transition: Transition): void;
 
     /**
      * This hook is executed when the router completely exits this route. It is
      * not executed when the model for the route changes.
      */
-    deactivate(): void;
+    deactivate(transition: Transition): void;
 
     /**
      * The didTransition action is fired after a transition has successfully been

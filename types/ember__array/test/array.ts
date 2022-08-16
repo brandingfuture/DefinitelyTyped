@@ -16,7 +16,11 @@ assertType<Person>(people.get('lastObject'));
 assertType<Person>(people.get('firstObject'));
 assertType<boolean>(people.isAny('isHappy'));
 assertType<boolean>(people.isAny('isHappy', false));
-assertType<boolean>(people.isAny('isHappy', "false")); // $ExpectError
+// @ts-expect-error
+assertType<boolean>(people.isAny('isHappy', "false"));
+
+assertType<Person | undefined>(people.objectAt(0));
+assertType<EmberArray<Person | undefined>>(people.objectsAt([1, 2, 3]));
 
 const persons1: Person[] = people.filterBy('isHappy');
 const persons2: MutableArray<Person> = people.filterBy('isHappy');

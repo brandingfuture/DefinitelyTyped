@@ -32,6 +32,9 @@ declare module 'meteor/meteor' {
             // One of the tests assigns a new property to the user so it has to be typed
             dexterity?: number | undefined;
         }
+        interface UserProfile {
+            name?: string | undefined;
+        }
     }
 }
 
@@ -128,6 +131,8 @@ namespace MeteorTests {
         // Todo: Not sure how to define in typescript
         //  self.added("counts", roomId, {count: count});
         self.ready();
+
+        self.unblock();
 
         self.onStop(function () {
             handle.stop();
@@ -615,34 +620,39 @@ namespace MeteorTests {
     /**
      * Fixes this discussion https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/55173
      */
-    Accounts.sendEnrollmentEmail(); // $ExpectError
+    // @ts-expect-error
+    Accounts.sendEnrollmentEmail();
     Accounts.sendEnrollmentEmail('userId');
     Accounts.sendEnrollmentEmail('userId', 'email');
     Accounts.sendEnrollmentEmail('userId', undefined, {});
     Accounts.sendEnrollmentEmail('userId', undefined, undefined, {});
     Accounts.sendEnrollmentEmail('userId', 'email', {}, {});
 
-    Accounts.sendResetPasswordEmail(); // $ExpectError
+    // @ts-expect-error
+    Accounts.sendResetPasswordEmail();
     Accounts.sendResetPasswordEmail('userId');
     Accounts.sendResetPasswordEmail('userId', 'email');
     Accounts.sendResetPasswordEmail('userId', undefined, {});
     Accounts.sendResetPasswordEmail('userId', undefined, undefined, {});
     Accounts.sendResetPasswordEmail('userId', 'email', {}, {});
 
-    Accounts.sendVerificationEmail(); // $ExpectError
+    // @ts-expect-error
+    Accounts.sendVerificationEmail();
     Accounts.sendVerificationEmail('userId');
     Accounts.sendVerificationEmail('userId', 'email');
     Accounts.sendVerificationEmail('userId', undefined, {});
     Accounts.sendVerificationEmail('userId', undefined, undefined, {});
     Accounts.sendVerificationEmail('userId', 'email', {}, {});
 
-    Accounts.findUserByEmail(); // $ExpectError
+    // @ts-expect-error
+    Accounts.findUserByEmail();
     Accounts.findUserByEmail('email'); // $ExpectType User | null | undefined
     Accounts.findUserByEmail('email', {}); // $ExpectType User | null | undefined
     Accounts.findUserByEmail('email', { fields: undefined }); // $ExpectType User | null | undefined
     Accounts.findUserByEmail('email', { fields: {} }); // $ExpectType User | null | undefined
 
-    Accounts.findUserByUsername(); // $ExpectError
+    // @ts-expect-error
+    Accounts.findUserByUsername();
     Accounts.findUserByUsername('email'); // $ExpectType User | null | undefined
     Accounts.findUserByUsername('email', {}); // $ExpectType User | null | undefined
     Accounts.findUserByUsername('email', { fields: undefined }); // $ExpectType User | null | undefined
@@ -693,7 +703,7 @@ namespace MeteorTests {
     Accounts.emailTemplates.siteName = 'AwesomeSite';
     Accounts.emailTemplates.from = 'AwesomeSite Admin <accounts@example.com>';
     Accounts.emailTemplates.enrollAccount.subject = function (user) {
-        return 'Welcome to Awesome Town, ' + user.profile.name;
+        return 'Welcome to Awesome Town, ' + user.profile?.name;
     };
     Accounts.emailTemplates.enrollAccount.text = function (user: any, url: string) {
         return (
@@ -995,7 +1005,8 @@ namespace MeteorTests {
 
     var reactiveDict2 = new ReactiveDict<{ foo: string }>();
     reactiveDict2.set({ foo: 'bar' });
-    reactiveDict2.set('foo1', 'bar'); // $ExpectError
+    // @ts-expect-error
+    reactiveDict2.set('foo1', 'bar');
 
     var reactiveDict3 = new ReactiveDict('reactive-dict-3');
     var reactiveDict4 = new ReactiveDict('reactive-dict-4', { foo: 'bar' });
@@ -1008,8 +1019,10 @@ namespace MeteorTests {
     reactiveDict5.set({ foo: 'bar' });
     reactiveDict5.set({ foo: 'bar', foo2: 'bar' });
 
-    reactiveDict5.set('foo1', 'bar'); // $ExpectError
-    reactiveDict5.set('foo', 2); // $ExpectError
+    // @ts-expect-error
+    reactiveDict5.set('foo1', 'bar');
+    // @ts-expect-error
+    reactiveDict5.set('foo', 2);
 
     reactiveDict5.get('foo') === 'bar';
 
@@ -1050,7 +1063,7 @@ namespace MeteorTests {
     Accounts.emailTemplates.headers = { asdf: 'asdf', qwer: 'qwer' };
 
     Accounts.emailTemplates.enrollAccount.subject = function (user: Meteor.User) {
-        return 'Welcome to Awesome Town, ' + user.profile.name;
+        return 'Welcome to Awesome Town, ' + user.profile?.name;
     };
     Accounts.emailTemplates.enrollAccount.html = function (user: Meteor.User, url: string) {
         return '<h1>Some html here</h1>';
@@ -1142,7 +1155,7 @@ namespace MeteorTests {
 
     // Covers https://github.com/meteor-typings/meteor/issues/18
     if (Meteor.isDevelopment) {
-        Rooms._dropIndex({ field: 1 });
+        Rooms._dropIndex('indexName');
     }
 
     // Covers https://github.com/meteor-typings/meteor/issues/20

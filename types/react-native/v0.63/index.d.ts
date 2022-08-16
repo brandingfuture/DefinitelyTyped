@@ -36,7 +36,6 @@
 //                 David Sheldrick <https://github.com/ds300>
 //                 Natsathorn Yuthakovit <https://github.com/natsathorn>
 //                 ConnectDotz <https://github.com/connectdotz>
-//                 Marcel Lasaj <https://github.com/TheWirv>
 //                 Alexey Molchan <https://github.com/alexeymolchan>
 //                 Alex Brazier <https://github.com/alexbrazier>
 //                 Arafat Zahan <https://github.com/kuasha420>
@@ -6902,7 +6901,7 @@ export interface ActionSheetIOSOptions {
     title?: string;
     options: string[];
     cancelButtonIndex?: number;
-    destructiveButtonIndex?: number;
+    destructiveButtonIndex?: number | number[] | undefined | null;
     message?: string;
     anchor?: number;
     tintColor?: ColorValue | ProcessedColorValue;

@@ -2,7 +2,8 @@ import Route from '@ember/routing/route';
 import Array from '@ember/array';
 import EmberObject from '@ember/object';
 import Controller from '@ember/controller';
-import Transition from '@ember/routing/-private/transition';
+import Transition from '@ember/routing/transition';
+import RouteInfo, { RouteInfoWithAttributes } from '@ember/routing/route-info';
 
 class Post extends EmberObject {}
 
@@ -43,6 +44,18 @@ Route.extend({
     },
 });
 
+class ActivateRoute extends Route {
+    activate(transition: Transition) {
+        this.transitionTo('someOtherRoute');
+    }
+}
+
+class DeactivateRoute extends Route {
+    deactivate(transition: Transition) {
+        this.transitionTo('someOtherRoute');
+    }
+}
+
 class RedirectRoute extends Route {
     redirect(model: {}, a: Transition) {
         if (!model) {
@@ -52,7 +65,7 @@ class RedirectRoute extends Route {
 }
 
 class InvalidRedirect extends Route {
-    // $ExpectError
+    // @ts-expect-error
     redirect(model: {}, a: Transition, anOddArg: unknown) {
         if (!model) {
             this.transitionTo('there');
@@ -75,11 +88,13 @@ class TransitionToExamples extends Route {
     }
 
     transitionToNonsense() {
-        this.transitionTo({ cannotDoModelHere: true }); // $ExpectError
+        // @ts-expect-error
+        this.transitionTo({ cannotDoModelHere: true });
     }
 
     transitionToBadQP() {
-        this.transitionTo({ queryParams: 12 }); // $ExpectError
+        // @ts-expect-error
+        this.transitionTo({ queryParams: 12 });
     }
 
     transitionToId() {
@@ -124,6 +139,7 @@ Route.extend({
 
 const route = Route.create();
 route.controllerFor('whatever'); // $ExpectType Controller
+route.paramsFor('whatever'); // $ExpectType object
 
 class RouteUsingClass extends Route.extend({
     randomProperty: 'the .extend + extends bit type-checks properly',
@@ -157,10 +173,55 @@ class WithNonReturningBeforeAndModelHooks extends Route {
 
 class WithBadReturningBeforeAndModelHooks extends Route {
     beforeModel(transition: Transition): void | Promise<unknown> {
-        return "returning anything else is nonsensical (if 'legal')"; // $ExpectError
+        // @ts-expect-error
+        return "returning anything else is nonsensical (if 'legal')";
     }
 
     afterModel(resolvedModel: unknown, transition: Transition): void {
-        return "returning anything else is nonsensical (if 'legal')"; // $ExpectError
+        // @ts-expect-error
+        return "returning anything else is nonsensical (if 'legal')";
     }
 }
+
+interface RouteParams {
+    cool: string;
+}
+
+class WithParamsInModel extends Route<boolean, RouteParams> {
+    model(params: RouteParams, transition: Transition) {
+        return true;
+    }
+}
+
+// @ts-expect-error
+class WithNonsenseParams extends Route<boolean, number> {}
+
+class WithImplicitParams extends Route {
+    model(params: RouteParams) {
+        return { whatUp: 'dog' };
+    }
+}
+
+// $ExpectType RouteParams
+type ImplicitParams = WithImplicitParams extends Route<any, infer T> ? T : never;
+
+// back-compat for existing users of these
+// NOTE: we will *not* migrate the private import locations when moving to
+// publish from Ember itself.
+import PrivateTransition from '@ember/routing/-private/transition';
+declare let publicTransition: Transition;
+declare let oldPrivateTransition: PrivateTransition;
+publicTransition = oldPrivateTransition;
+oldPrivateTransition = publicTransition;
+
+import PrivateRouteInfo from '@ember/routing/-private/route-info';
+declare let publicRouteInfo: RouteInfo;
+declare let privateRouteInfo: PrivateRouteInfo;
+publicRouteInfo = privateRouteInfo;
+privateRouteInfo = publicRouteInfo;
+
+import PrivateRouteInfoWithAttributes from '@ember/routing/-private/route-info-with-attributes';
+declare let publicRouteInfoWithAttributes: RouteInfoWithAttributes;
+declare let privateRouteInfoWithAttributes: PrivateRouteInfoWithAttributes;
+publicRouteInfoWithAttributes = privateRouteInfoWithAttributes;
+privateRouteInfoWithAttributes = publicRouteInfoWithAttributes;

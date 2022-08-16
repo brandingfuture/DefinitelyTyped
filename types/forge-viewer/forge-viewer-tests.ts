@@ -42,6 +42,7 @@ Autodesk.Viewing.Initializer(options, async () => {
     preferencesTests(viewer);
     showHideTests(viewer);
     worldUpTests(viewer);
+    selectionTests(viewer);
     await bulkPropertiesTests(model);
     await compGeomTests(viewer);
     await dataVizTests(viewer);
@@ -56,6 +57,8 @@ Autodesk.Viewing.Initializer(options, async () => {
     await streamLineTests(viewer);
     await stringExtractorTests(viewer);
     await visualClustersTests(viewer);
+    // shutdown the viewer
+    viewer.tearDown();
 });
 
 function globalTests(): void {
@@ -122,7 +125,7 @@ function cameraTests(viewer: Autodesk.Viewing.GuiViewer3D): void {
 }
 
 async function bulkPropertiesTests(model: Autodesk.Viewing.Model): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
+    const propResults = await new Promise<Autodesk.Viewing.PropertyResult[]>((resolve, reject) => {
         const instanceTree = model.getInstanceTree();
         const ids: number[] = [];
 
@@ -133,16 +136,21 @@ async function bulkPropertiesTests(model: Autodesk.Viewing.Model): Promise<void>
         });
 
         model.getBulkProperties(ids, {
-            propFilter: [ "Name"] },
+            propFilter: ["Name"]
+        },
             (propResults) => {
-                resolve();
+                resolve(propResults);
             }
         );
     });
+    // $ExpectType string | null
+    propResults[0].properties[0].units;
+    // $ExpectType string | number
+    propResults[0].properties[0].displayValue;
 }
 
 async function compGeomTests(viewer: Autodesk.Viewing.GuiViewer3D): Promise<void> {
-    await viewer.loadExtension('Autodesk.DataVisualization');
+    await viewer.loadExtension('Autodesk.CompGeom');
     const pln = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
 
     Autodesk.Extensions.CompGeom.makePlaneBasis(pln);
@@ -177,7 +185,9 @@ async function dataVizTests(viewer: Autodesk.Viewing.GuiViewer3D): Promise<void>
     heatmapData.addChild(level);
     heatmapData.initialize(viewer.model);
     await ext.setupSurfaceShading(viewer.model, heatmapData);
-    ext.registerSurfaceShadingColors('temperature', [ 0xff0000, 0x0000ff ]);
+    ext.registerSurfaceShadingColors('temperature', [ 0xff0000, 0x0000ff ], {
+        alpha: 0.7
+    });
 
     const getSensorValue = (device: any, sensorType: any) => {
         const value = Math.random();
@@ -205,7 +215,9 @@ async function dataVizPlanarTests(viewer: Autodesk.Viewing.GuiViewer3D): Promise
     await ext.setupSurfaceShading(viewer.model, heatmapData, {
         type: 'PlanarHeatmap'
     });
-    ext.registerSurfaceShadingColors('temperature', [ 0xff0000, 0x0000ff ]);
+    ext.registerSurfaceShadingColors('temperature', [ 0xff0000, 0x0000ff ], {
+        alpha: 0.7
+    });
 
     const getSensorValue = (device: any, sensorType: any) => {
         const value = Math.random();
@@ -538,4 +550,40 @@ function loadDocument(urn: string): Promise<Autodesk.Viewing.Document> {
             reject(new Error(errorMsg));
         });
     });
+}
+
+function checkMeshAllowsBufferGeometry() {
+    const boxGeometry = new THREE.BufferGeometry().fromGeometry(new THREE.BoxGeometry(10, 10, 10));
+    const boxMaterial = new THREE.MeshPhongMaterial({ color: "#ff0000" });
+    const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+
+    if (!(boxMesh.geometry instanceof THREE.BufferGeometry))
+        throw new Error("Mesh geometry is not a BufferGeometry!");
+}
+
+function matrixSetPositionTest(): void {
+    const matrix = new THREE.Matrix4();
+
+    matrix.setPosition(new THREE.Vector3(1, 1, 1)); // $ExpectType Matrix4
+}
+
+function selectionTests(viewer: Autodesk.Viewing.GuiViewer3D) {
+    const rootId = viewer.model.getRootId();
+
+    viewer.select(rootId);
+
+    const aggregateSelection = viewer.getAggregateSelection();
+
+    if (aggregateSelection.length !== 1)
+        throw new Error("Should return exactly one object");
+
+    const selection = aggregateSelection[0];
+
+    if (selection.model !== viewer.model)
+        throw new Error("Selection model differs from viewer model");
+
+    if (selection.selection.length !== 1 || selection.selection[0] !== rootId)
+        throw new Error("Something is wron with aggregate selection!");
+
+    viewer.select([]);
 }
