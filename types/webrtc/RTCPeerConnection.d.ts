@@ -74,7 +74,6 @@ interface RTCAnswerOptions extends RTCOfferAnswerOptions {
 // https://www.w3.org/TR/webrtc/#idl-def-rtciceserver
 interface RTCIceServer {
     credential?: string | undefined;
-    credentialType?: RTCIceCredentialType | undefined;
     urls: string | string[];
     username?: string | undefined;
 }
@@ -142,7 +141,7 @@ interface RTCRtpCodecCapability {
 
 // https://www.w3.org/TR/webrtc/#idl-def-rtcrtpheaderextensioncapability
 interface RTCRtpHeaderExtensionCapability {
-    uri?: string | undefined;
+    uri: string;
 }
 
 // https://www.w3.org/TR/webrtc/#idl-def-rtcrtpcapabilities
