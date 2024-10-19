@@ -1,6 +1,6 @@
 {
     "private": true,
     "dependencies": {
-        "ethers": "^4.0.43"
+        "ethers": "^5.0.0"
     }
 }
